@@ -83,7 +83,13 @@
             NSDictionary *info = [notification userInfo];
             NSNumber *number = [info objectForKey:UIKeyboardAnimationDurationUserInfoKey];
             double duration = [number doubleValue];
-            [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillShow', { 'duration': %f })", duration]];
+                                             
+            CGRect screen = [[UIScreen mainScreen] bounds];
+            CGRect keyboard = ((NSValue*)notification.userInfo[@"UIKeyboardFrameEndUserInfoKey"]).CGRectValue;
+            CGRect intersection = CGRectIntersection(screen, keyboard);
+            CGFloat height = MIN(intersection.size.width, intersection.size.height);
+
+            [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillShow', { 'duration': %f, 'keyboardHeight': %f })", duration, height]];
                                                                                          
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnShowing();"];
             weakSelf.keyboardIsVisible = YES;
