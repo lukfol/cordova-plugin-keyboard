@@ -79,6 +79,12 @@
                                                 object:nil
                                                  queue:[NSOperationQueue mainQueue]
                                             usingBlock:^(NSNotification* notification) {
+
+            NSDictionary *info = [notification userInfo];
+            NSNumber *number = [info objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+            double duration = [number doubleValue];
+            [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillShow', { 'duration': %f })", duration]];
+                                                                                         
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnShowing();"];
             weakSelf.keyboardIsVisible = YES;
                                             }];
@@ -86,6 +92,12 @@
                                                 object:nil
                                                  queue:[NSOperationQueue mainQueue]
                                             usingBlock:^(NSNotification* notification) {
+         
+            NSDictionary *info = [notification userInfo];
+            NSNumber *number = [info objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+            double duration = [number doubleValue];
+            [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillHide', {            'duration': %f })", duration]];
+                                             
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnHiding();"];
             weakSelf.keyboardIsVisible = NO;
                                             }];
