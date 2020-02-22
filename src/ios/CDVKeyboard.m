@@ -171,7 +171,7 @@ static IMP WKOriginalImp;
         return;
     }
 
-    self.webView.scrollView.scrollEnabled = YES;
+    self.webView.scrollView.scrollEnabled = self.disableScrollingInWebView ? NO : YES;
 
     CGRect screen = [[[UIApplication sharedApplication] keyWindow] frame];
     CGRect statusBar = [[UIApplication sharedApplication] statusBarFrame];
@@ -207,6 +207,9 @@ static IMP WKOriginalImp;
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView
 {
+   if(self.disableScrollingInWebView)
+      [scrollView setContentOffset:CGPointMake(0, -scrollView.contentInset.top) animated:NO];
+ 
     if (_shrinkView && _keyboardIsVisible) {
         CGFloat maxY = scrollView.contentSize.height - scrollView.bounds.size.height;
         if (scrollView.bounds.origin.y > maxY) {
@@ -245,6 +248,21 @@ static IMP WKOriginalImp;
     }
     
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:self.disableScrollingInShrinkView]
+                                callbackId:command.callbackId];
+}
+
+- (void)disableScrollingInWebView:(CDVInvokedUrlCommand*)command
+{
+    if (command.arguments.count > 0) {
+        id value = [command.arguments objectAtIndex:0];
+        if (!([value isKindOfClass:[NSNumber class]])) {
+            value = [NSNumber numberWithBool:NO];
+        }
+
+        self.disableScrollingInWebView = [value boolValue];
+    }
+    
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:self.disableScrollingInWebView]
                                 callbackId:command.callbackId];
 }
 
