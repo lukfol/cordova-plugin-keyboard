@@ -31,11 +31,14 @@
 @property (readwrite, assign, nonatomic) BOOL disableScrollingInWebView;
 @property (readwrite, assign, nonatomic) BOOL hideFormAccessoryBar;
 @property (readonly, assign, nonatomic) BOOL keyboardIsVisible;
+@property (readonly, assign, nonatomic) BOOL keyboardIsVisible2;
+
 
 - (void)shrinkView:(CDVInvokedUrlCommand*)command;
 - (void)disableScrollingInShrinkView:(CDVInvokedUrlCommand*)command;
 - (void)disableScrollingInWebView:(CDVInvokedUrlCommand*)command;
 - (void)hideFormAccessoryBar:(CDVInvokedUrlCommand*)command;
 - (void)hide:(CDVInvokedUrlCommand*)command;
+- (void)show:(CDVInvokedUrlCommand*)command;
 
 @end
