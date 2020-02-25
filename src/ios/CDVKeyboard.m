@@ -28,6 +28,7 @@
 @interface CDVKeyboard () <UIScrollViewDelegate>
 
 @property (nonatomic, readwrite, assign) BOOL keyboardIsVisible;
+@property (nonatomic, readwrite, assign) BOOL keyboardIsVisible2;
 
 @end
 
@@ -72,6 +73,7 @@
                                             object:nil
                                              queue:[NSOperationQueue mainQueue]
                                         usingBlock:^(NSNotification* notification) {
+        weakSelf.keyboardIsVisible2 = NO;
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnHide();"];
                                         }];
 
@@ -79,31 +81,29 @@
                                                 object:nil
                                                  queue:[NSOperationQueue mainQueue]
                                             usingBlock:^(NSNotification* notification) {
-
             NSDictionary *info = [notification userInfo];
             NSNumber *number = [info objectForKey:UIKeyboardAnimationDurationUserInfoKey];
             double duration = [number doubleValue];
-                                             
+        
             CGRect screen = [[UIScreen mainScreen] bounds];
             CGRect keyboard = ((NSValue*)notification.userInfo[@"UIKeyboardFrameEndUserInfoKey"]).CGRectValue;
             CGRect intersection = CGRectIntersection(screen, keyboard);
             CGFloat height = MIN(intersection.size.width, intersection.size.height);
 
+        
             [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillShow', { 'duration': %f, 'keyboardHeight': %f })", duration, height]];
-                                                                                         
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnShowing();"];
             weakSelf.keyboardIsVisible = YES;
+            weakSelf.keyboardIsVisible2 = YES;
                                             }];
     _keyboardWillHideObserver = [nc addObserverForName:UIKeyboardWillHideNotification
                                                 object:nil
                                                  queue:[NSOperationQueue mainQueue]
                                             usingBlock:^(NSNotification* notification) {
-         
             NSDictionary *info = [notification userInfo];
             NSNumber *number = [info objectForKey:UIKeyboardAnimationDurationUserInfoKey];
             double duration = [number doubleValue];
             [weakSelf.commandDelegate evalJs: [NSString stringWithFormat:@"cordova.fireWindowEvent('keyboardWillHide', {            'duration': %f })", duration]];
-                                             
             [weakSelf.commandDelegate evalJs:@"Keyboard.fireOnHiding();"];
             weakSelf.keyboardIsVisible = NO;
                                             }];
@@ -219,14 +219,18 @@ static IMP WKOriginalImp;
 
     // A view's frame is in its superview's coordinate system so we need to convert again
     self.webView.frame = [self.webView.superview convertRect:screen fromView:self.webView];
+    //if(self.disableScrollingInWebView){
+    //    [self restoreViewport];
+    //}
 }
 
 #pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView
 {
-   if(self.disableScrollingInWebView)
-      [scrollView setContentOffset:CGPointMake(0, -scrollView.contentInset.top) animated:NO];
+    if(_disableScrollingInWebView && _keyboardIsVisible2){
+        [scrollView setContentOffset:CGPointMake(0, -scrollView.contentInset.top) animated:NO];
+    }
  
     if (_shrinkView && _keyboardIsVisible) {
         CGFloat maxY = scrollView.contentSize.height - scrollView.bounds.size.height;
